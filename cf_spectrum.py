@@ -13,22 +13,23 @@ cf_url = "https://api.cloudflare.com/client/v4/zones"
 email  = "L5yirencp@gmail.com"
 key    = "5321b5c5022b60107a9e5ad295539c58ee551"
 
-zone_id = "689438eb0e73fd72cdbf01067c22575d" #bbqp5566.com zone_id
+# zone_id = "689438eb0e73fd72cdbf01067c22575d" #bbqp5566.com zone_id
+zone_id = "9c7c2edc108019e82c6272677ed6ccf3" #appifc.com zone_id
 
 # #requests参数
 # headers = {'X-Auth-Email': email, 'X-Auth-Key': key, 'Content-Type': 'application/json'}
 
 #给cf 后台域名添加白名单
-for customer in manage:
-    if customer == "1717cp":
-        info = manage[customer]
-        csa = cfSpectrumApi(info['email'], info['key'])
-        for ip in info['whitelist']:
-            result = csa.CreateIpfirewall(info['zone_id'], ip, mode='whitelist', notes="后台白名单")
-            print (result)
-            # break
+# for customer in manage:
+#     if customer == "1717cp":
+#         info = manage[customer]
+#         csa = cfSpectrumApi(info['email'], info['key'])
+#         for ip in info['whitelist']:
+#             result = csa.CreateIpfirewall(info['zone_id'], ip, mode='whitelist', notes="后台白名单")
+#             print (result)
+#             # break
 
-sys.exit()
+# sys.exit()
 
 #获取api 接口
 csa = cfSpectrumApi(email, key)
@@ -42,6 +43,9 @@ if not appList: sys.exit(1)
 # sys.exit(0)
 
 for app in appList:
+    print (app['id'], app['dns']['name'], app['protocol'], app['origin_direct'], app['ip_firewall'], app['proxy_protocol'])
+    continue
+    sys.exit()
     if app['protocol'] == "tcp/8800":
         print (app['id'], app['dns']['name'], app['protocol'], app['origin_direct'], app['ip_firewall'], app['proxy_protocol'])
         # if app['dns']['name'] == "lgrm2.bbqp5566.com":
