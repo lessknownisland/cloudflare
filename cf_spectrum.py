@@ -35,7 +35,11 @@ zone_id = "9c7c2edc108019e82c6272677ed6ccf3" #appifc.com zone_id
 csa = cfSpectrumApi(email, key)
 
 #获取指定域名的applist
-appList = csa.GetSpectList(zone_id)['result']
+#print (csa.GetSpectList(zone_id))
+appList = csa.GetSpectList(zone_id)
+if 'result' not in appList.keys(): 
+    print ("获取结果失败：%s" %appList)
+    sys.exit(1)
 if not appList: sys.exit(1)
 
 #block 非法IP
@@ -56,7 +60,10 @@ for app in appList:
     if app['dns']['name'] == "lgrm2.appifc.com":
         # zone_id = "ea898577a1186e8c8a5d3e7fb7ab35d3"
         # app['dns']['name'] = "lgrm.bbqp0555.com"
-        app['origin_direct'] = [app['origin_direct'][0].replace("47.75.141.163", "52.128.245.125")]
+        # app['origin_direct'] = [app['origin_direct'][0].replace("52.128.245.125", "47.244.106.52")]
+        #app['dns']['name'] = "lgrm5.appifc.com"
+        #app['origin_direct'] = [app['origin_direct'][0].replace("47.75.140.240", "52.128.245.125")]
+        app['proxy_protocol'] = True
         print (csa.UpdateApp(zone_id, app))
         continue
     if app['protocol'] == "tcp/8800" and app['dns']['name'] in ["lgrm3.bbqp5566.com", "lgrm4.bbqp5566.com"]:
