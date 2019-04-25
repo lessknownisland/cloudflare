@@ -40,6 +40,8 @@ appList = csa.GetSpectList(zone_id)
 if 'result' not in appList.keys(): 
     print ("获取结果失败：%s" %appList)
     sys.exit(1)
+else:
+    appList = appList['result']
 if not appList: sys.exit(1)
 
 #block 非法IP
@@ -66,6 +68,9 @@ for app in appList:
         app['proxy_protocol'] = True
         print (csa.UpdateApp(zone_id, app))
         continue
+    else:
+        continue
+        
     if app['protocol'] == "tcp/8800" and app['dns']['name'] in ["lgrm3.bbqp5566.com", "lgrm4.bbqp5566.com"]:
         # app['origin_direct'] = ['tcp://8.8.8.8:8800']
         app['origin_direct'] = [
