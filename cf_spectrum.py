@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 #-_- coding: utf-8 -_-
 
-import requests, json, sys
+import requests
+import json
+import sys
+
 from config          import *
 from cf_spectrum_api import cfSpectrumApi
 #禁用安全请求警告
@@ -20,16 +23,16 @@ zone_id = "9c7c2edc108019e82c6272677ed6ccf3" #appifc.com zone_id
 # headers = {'X-Auth-Email': email, 'X-Auth-Key': key, 'Content-Type': 'application/json'}
 
 #给cf 后台域名添加白名单
-# for customer in manage:
-#     if customer == "1717cp":
-#         info = manage[customer]
-#         csa = cfSpectrumApi(info['email'], info['key'])
-#         for ip in info['whitelist']:
-#             result = csa.CreateIpfirewall(info['zone_id'], ip, mode='whitelist', notes="后台白名单")
-#             print (result)
-#             # break
+for customer in manage:
+    if customer == "vgsport":
+        info = manage[customer]
+        csa = cfSpectrumApi(info['email'], info['key'])
+        for ip in info['whitelist']:
+            result = csa.CreateIpfirewall(info['zone_id'], ip, mode='whitelist', notes="vgsport 后台白名单")
+            print (result)
+            # break
 
-# sys.exit()
+sys.exit(0)
 
 #获取api 接口
 csa = cfSpectrumApi(email, key)
