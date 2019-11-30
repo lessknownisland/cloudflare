@@ -25,7 +25,7 @@ class cfSpectrumApi(object):
         '''
             获取指定 zone_id 的app 列表
         '''
-        url = self.__url + "/zones/%s" %zone_id + "/spectrum/apps"
+        url = f"{self.__url}/zones/{zone_id}/spectrum/apps"
         try:
             ret = requests.get(url, headers=self.__headers, verify=False, timeout=self.__timeout)
         except Exception as e:
@@ -46,10 +46,16 @@ class cfSpectrumApi(object):
         data = {
             'protocol': app['protocol'],
             'dns': app['dns'],
-            'origin_direct': app['origin_direct'],
+            # 'origin_direct': app['origin_direct'],
             'ip_firewall': app['ip_firewall'],
             'proxy_protocol': app['proxy_protocol'],
         }
+        # CF 转发请求有两种，一种是直接转发到IP，一种转发到事先定义好的负载均衡组
+        if 'origin_direct' in app:
+            data['origin_direct'] = app['origin_direct']
+        else:
+            data['origin_dns'] = app['origin_dns']
+
         try:
             ret  = requests.put(url, headers=self.__headers, data=json.dumps(data), verify=False, timeout=self.__timeout)
         except Exception as e:

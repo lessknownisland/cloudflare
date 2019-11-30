@@ -22,23 +22,22 @@ zone_id = "9c7c2edc108019e82c6272677ed6ccf3" #appifc.com zone_id
 # #requests参数
 # headers = {'X-Auth-Email': email, 'X-Auth-Key': key, 'Content-Type': 'application/json'}
 
-#给cf 后台域名添加白名单
-for customer in manage:
-    if customer == "apiopen":
-        info = manage[customer]
-        csa = cfSpectrumApi(info['email'], info['key'])
-        for ip in info['whitelist']:
-            result = csa.CreateIpfirewall(info['zone_id'], ip, mode='whitelist', notes="apiopen 后台白名单")
-            print (result)
-            # break
+### 给cf 后台域名添加白名单 ###
+# for customer in manage:
+#     if customer == "apiopen":
+#         info = manage[customer]
+#         csa = cfSpectrumApi(info['email'], info['key'])
+#         for ip in info['whitelist']:
+#             result = csa.CreateIpfirewall(info['zone_id'], ip, mode='whitelist', notes="apiopen 后台白名单")
+#             print (result)
+#             # break
+# sys.exit()
 
-sys.exit()
-
-#获取api 接口
+# 获取api 接口
 csa = cfSpectrumApi(email, key)
 
-#获取指定域名的applist
-#print (csa.GetSpectList(zone_id))
+### 获取指定域名的applist ###
+# print (csa.GetSpectList(zone_id))
 appList = csa.GetSpectList(zone_id)
 if 'result' not in appList.keys(): 
     print ("获取结果失败：%s" %appList)
@@ -52,9 +51,15 @@ if not appList: sys.exit(1)
 # sys.exit(0)
 
 for app in appList:
-    # print (app['id'], app['dns']['name'], app['protocol'], app['origin_direct'], app['ip_firewall'], app['proxy_protocol'])
+    ### 打印 当前获取到的app 转发详情 ###
+    # if 'origin_direct' in app:
+    #     print (app['id'], app['dns']['name'], app['protocol'], app['origin_direct'], app['ip_firewall'], app['proxy_protocol'])
+    # else:
+    #     print (app)
     # continue
     # sys.exit()
+
+    ### 针对 8800 端口做指定的调整更新 ###
     # if app['protocol'] == "tcp/8800":
     #     print (app['id'], app['dns']['name'], app['protocol'], app['origin_direct'], app['ip_firewall'], app['proxy_protocol'])
     #     # if app['dns']['name'] == "lgrm2.appifc.com":
@@ -62,18 +67,21 @@ for app in appList:
     #     #     print (csa.UpdateApp(zone_id, app))
     # continue
 
+    ### 针对 指定的域名 做指定的调整更新 ###
     if app['dns']['name'] == "lgrm2.appifc.com":
         # zone_id = "ea898577a1186e8c8a5d3e7fb7ab35d3"
         # app['dns']['name'] = "lgrm.bbqp0555.com"
         # app['origin_direct'] = [app['origin_direct'][0].replace("52.128.245.125", "47.244.106.52")]
         #app['dns']['name'] = "lgrm5.appifc.com"
         #app['origin_direct'] = [app['origin_direct'][0].replace("47.75.140.240", "52.128.245.125")]
-        app['proxy_protocol'] = True
+        app['proxy_protocol'] = False
         print (csa.UpdateApp(zone_id, app))
+        # break
         continue
     else:
         continue
         
+    ### 针对 指定的域名以及指定的端口 做指定的调整更新 ###
     if app['protocol'] == "tcp/8800" and app['dns']['name'] in ["lgrm3.bbqp5566.com", "lgrm4.bbqp5566.com"]:
         # app['origin_direct'] = ['tcp://8.8.8.8:8800']
         app['origin_direct'] = [
