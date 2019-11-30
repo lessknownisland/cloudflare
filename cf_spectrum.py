@@ -24,15 +24,15 @@ zone_id = "9c7c2edc108019e82c6272677ed6ccf3" #appifc.com zone_id
 
 #给cf 后台域名添加白名单
 for customer in manage:
-    if customer == "vgsport":
+    if customer == "apiopen":
         info = manage[customer]
         csa = cfSpectrumApi(info['email'], info['key'])
         for ip in info['whitelist']:
-            result = csa.CreateIpfirewall(info['zone_id'], ip, mode='whitelist', notes="vgsport 后台白名单")
+            result = csa.CreateIpfirewall(info['zone_id'], ip, mode='whitelist', notes="apiopen 后台白名单")
             print (result)
             # break
 
-sys.exit(0)
+sys.exit()
 
 #获取api 接口
 csa = cfSpectrumApi(email, key)

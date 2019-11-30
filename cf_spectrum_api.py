@@ -84,6 +84,7 @@ class cfSpectrumApi(object):
     def CreateIpfirewall(self, zone_id, ip, mode="block", notes="新增规则"):
         '''
             添加ip 防火墙规则，主要应该是block IP
+            添加的防火墙规则，是按当前主域名来吧，不特定指某一子域名，即 "this website" 不是 "All websites in account"
             mode: block, challenge, whitelist, js_challenge
         '''
         url = self.__url + "/zones/%s" %zone_id + "/firewall/access_rules/rules"
