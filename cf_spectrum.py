@@ -8,8 +8,8 @@ import sys
 from config          import *
 from cf_spectrum_api import cfSpectrumApi
 #禁用安全请求警告
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
-requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+# from requests.packages.urllib3.exceptions import InsecureRequestWarning
+# requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 #cf接口，账户参数
 cf_url = "https://api.cloudflare.com/client/v4/zones"
@@ -23,15 +23,16 @@ zone_id = "9c7c2edc108019e82c6272677ed6ccf3" #appifc.com zone_id
 # headers = {'X-Auth-Email': email, 'X-Auth-Key': key, 'Content-Type': 'application/json'}
 
 ### 给cf 后台域名添加白名单 ###
-# for customer in manage:
-#     if customer == "apiopen":
-#         info = manage[customer]
-#         csa = cfSpectrumApi(info['email'], info['key'])
-#         for ip in info['whitelist']:
-#             result = csa.CreateIpfirewall(info['zone_id'], ip, mode='whitelist', notes="apiopen 后台白名单")
-#             print (result)
-#             # break
-# sys.exit()
+for customer in manage:
+    if customer == 'apiopen':
+        info = manage[customer]
+        mode = 'whitelist'
+        csa = cfSpectrumApi(info['email'], info['key'])
+        for ip in info['whitelist']:
+            result = csa.CreateIpfirewall(info['zone_id'], ip, mode=mode, notes=f"{customer}: 后台或接口 {mode}")
+            print (result)
+            # break
+sys.exit()
 
 # 获取api 接口
 csa = cfSpectrumApi(email, key)
@@ -40,13 +41,13 @@ csa = cfSpectrumApi(email, key)
 # print (csa.GetSpectList(zone_id))
 appList = csa.GetSpectList(zone_id)
 if 'result' not in appList.keys(): 
-    print ("获取结果失败：%s" %appList)
+    print (f"获取结果失败：{appList}")
     sys.exit(1)
 else:
     appList = appList['result']
 if not appList: sys.exit(1)
 
-#block 非法IP
+### block 非法IP ###
 # print (csa.CreateIpfirewall(zone_id, "192.168.100.2", notes="非法请求tcp"))
 # sys.exit(0)
 

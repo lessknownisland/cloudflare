@@ -42,7 +42,7 @@ class cfSpectrumApi(object):
             'ip_firewall': True,
             'proxy_protocol': True,}
         '''
-        url  = self.__url + "/zones/%s" %zone_id + "/spectrum/apps/%s" %app['id']
+        url  = f"{self.__url}/zones/{zone_id}/spectrum/apps/{app['id']}"
         data = {
             'protocol': app['protocol'],
             'dns': app['dns'],
