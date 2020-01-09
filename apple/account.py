@@ -8,6 +8,7 @@ import os
 import time
 import base64
 import jwt
+import gzip
 
 # 禁用安全请求警告
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
@@ -57,4 +58,4 @@ app_headers = {"Authorization": f"Bearer {token}"}
 
 ret = requests.get(url, headers=app_headers, verify=False, timeout=5)
 
-print (ret.content)
+print (ret.json()["meta"])
