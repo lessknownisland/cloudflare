@@ -110,5 +110,38 @@ class cfSpectrumApi(object):
         else:
             return ret.json()
 
+    def DeleteIpfirewall(self, zone_id, rule_id):
+        '''
+            删除ip 防火墙规则
+        '''
+        url = f"{self.__url}/zones/{zone_id}/firewall/access_rules/rules/{rule_id}"
+        try:
+            ret  = requests.delete(url, headers=self.__headers, verify=False, timeout=self.__timeout)
+        except Exception as e:
+            print (str(e))
+            return {"success": False, "result": None}
+        else:
+            return ret.json()
+
+    def GetIpfirewall(self, zone_id, ip, mode="block"):
+        '''
+            获取ip 防火墙规则，针对 IP
+        '''
+        url = f"{self.__url}/zones/{zone_id}/firewall/access_rules/rules?mode={mode}&configuration.target=ip&configuration.value={ip}"
+        data = {
+            "mode": mode,
+            # "match": "all",
+            "configuration.target": "ip",
+            "configuration.value": ip,
+        }
+        try:
+            ret  = requests.get(url, headers=self.__headers, data=json.dumps(data), verify=False, timeout=self.__timeout)
+        except Exception as e:
+            print (str(e))
+            return {"success": False, "result": None}
+        else:
+            return ret.json()
+        
+
 if __name__ == "__main__":
     print ("no more")
