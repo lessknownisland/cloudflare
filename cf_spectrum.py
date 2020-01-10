@@ -24,7 +24,7 @@ zone_id = "9c7c2edc108019e82c6272677ed6ccf3" #appifc.com zone_id
 
 ### 给cf 后台域名添加白名单 ###
 for customer in manage:
-    if customer == 'bet365sport':
+    if customer == 'uc':
         info = manage[customer]
         mode = 'whitelist'
         csa = cfSpectrumApi(info['email'], info['key'])

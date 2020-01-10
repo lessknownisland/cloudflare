@@ -10,52 +10,103 @@ import base64
 import jwt
 import gzip
 
+from middleware.telegram import send_telegram
+from middleware.supersign import SuperSign
+from middleware.logger import logger
+from config import super_signature, apple_url, remind_count, message
+
+# 获取上级目录
+base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# 获取当前脚本路径
+cur_dir = os.path.abspath(os.path.join(os.path.dirname(__file__)))
+
 # 禁用安全请求警告
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
-# 获取当前目录
-base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# 复制超级签接口数据
+super_signature_d = super_signature.copy()
 
-# 苹果账号
-account = "juandizhilao749@163.com"
-issure_id = "adfbf4f6-08f5-484d-a92c-29b321ba7a92"
-key_id = "9365AKSB6X"
-p8_file = f"{base_dir}/apple/p8/AuthKey_9365AKSB6X.p8"
+# 循环获取超级签账号信息
+logger.info(f"\n"*5)
+for customer in super_signature_d.keys():
 
-# account = "gu1966318@126.com"
-# issure_id = "09d26945-1a89-4f91-99ee-6bd1a3a9dadd"
-# key_id = "MNB4626N93"
-# p8_file = f"{base_dir}/apple/p8/AuthKey_MNB4626N93.p8"
+    # 测试一些数据
+    # if customer != "leying": continue
 
-private_key = ""
+    # 记录错误数据
+    super_signature_d[customer]['error'] = ""
 
-# payload
-token_dict = {
-    "exp": time.time() + 20*60,  # 时间戳
-    "iss": issure_id,
-    "aud": "appstoreconnect-v1"
-}
+    logger.info(f"#"*100)
+    logger.info(f"开始操作 业主: {customer}")
+    
+    super_url = super_signature_d[customer]["url"]
+    logger.info(f"超级签URL: {super_url}")
 
-# headers
-headers = {
-    "alg": "ES256",  # 声明所使用的算法
-    "kid": key_id,
-    "typ": "JWT",
-}
+    # 获取超级签账号信息
+    ss = SuperSign(super_url)
+    data = ss.get_data()['data']
 
-private_key = open(p8_file, 'r').read()
+    if data:
+        for acc in data:
 
-jwt_token = jwt.encode(token_dict, private_key, algorithm="ES256", headers=headers)
+            # 测试一些数据
+            # if acc['account'] != "liaohe035huanya@163.com": continue
 
-url = "https://api.appstoreconnect.apple.com/v1/apps"
+            # 苹果采用的 ES256 编码方式，key是需要分段(\n)的，密钥头尾的"—BEGIN PRIVATE KEY—"也是必须的。之前我一直直接复制privatekey以文本的形式输入，在HS256下正常但是ES256会报错ValueError: Could not deserialize key data。
+            private_key = "-----BEGIN PRIVATE KEY-----" + acc['p8'].replace("-----BEGIN PRIVATE KEY-----", "").replace("-----END PRIVATE KEY-----", "").replace(" ", "\n") + "-----END PRIVATE KEY-----"
 
-token = str(jwt_token, encoding='utf-8')
+            logger.info(f"账号: {acc['account']}")
+            # logger.info(f"账号信息: {acc}")
 
-print (f"token: {token} \n")
+            # payload
+            token_dict = {
+                "exp": time.time() + 20*60,  # 时间戳, token 有效时间 20分钟
+                "iss": acc['iss'],
+                "aud": "appstoreconnect-v1"
+            }
 
-app_headers = {"Authorization": f"Bearer {token}"}
+            # headers
+            headers = {
+                "alg": "ES256",  # 声明所使用的算法。
+                "kid": acc['kid'],
+                "typ": "JWT",
+            }
+            
+            try:
+                # 使用jwt 获取苹果开发者 接口token
+                jwt_token = jwt.encode(token_dict, private_key, algorithm="ES256", headers=headers)
+                token = str(jwt_token, encoding='utf-8')
+                
+                # 苹果开发者 接口 请求头
+                app_headers = {"Authorization": f"Bearer {token}"}
 
-ret = requests.get(url, headers=app_headers, verify=False, timeout=5)
+            except Exception as e:
+                logger.error(f"获取苹果开发者 接口token 错误: {str(e)}")
 
-print (ret.json()["meta"])
+            else:
+                # 测试苹果开发者接口，判断账号能否正常使用
+                app_ret = None
+                try:
+                    ret = requests.get(apple_url, headers=app_headers, verify=False, timeout=15)
+                    app_ret = ret.json()
+                    if "errors" in app_ret.keys():
+                        super_signature_d[customer]['error'] += f"{acc['account']}: {str(app_ret)}\n"
+                except Exception as e:
+                    app_ret = str(e)
+                    super_signature_d[customer]['error'] += f"{acc['account']}: {app_ret}\n"
+                logger.info(f"苹果接口返回信息: {app_ret}")
+
+# logger.info(super_signature_d)
+
+# 发送预警信息
+for customer in super_signature_d.keys():
+    if super_signature_d[customer]['error']:
+        message['text'] = "\n".join([
+            "认证出现错误: ",
+            f"业主: {customer}",
+            super_signature_d[customer]['error'],
+        ])
+        send_telegram(message)
+
