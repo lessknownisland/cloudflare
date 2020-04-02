@@ -22,25 +22,39 @@ zone_id = "9c7c2edc108019e82c6272677ed6ccf3" #appifc.com zone_id
 # #requests参数
 # headers = {'X-Auth-Email': email, 'X-Auth-Key': key, 'Content-Type': 'application/json'}
 
+# info = manage['leying']
+# mode = 'whitelist'
+# csa = cfSpectrumApi(info['email'], info['key'])
+# get_ip_result = csa.GetIpfirewall(info['zone_id'], '103.100.60.165', 'whitelist')
+# print(get_ip_result)
+# if 'result' in get_ip_result.keys() and len(get_ip_result['result']) != 0:
+#     rule_id = get_ip_result['result'][0]['id']
+#     print (csa.DeleteIpfirewall(info['zone_id'], rule_id))
+
+
 ### 给cf 后台域名添加白名单 ###
 for customer in manage:
-    if customer == 'uc':
+    if customer in ['ali', '', '']:
         info = manage[customer]
         mode = 'whitelist'
         csa = cfSpectrumApi(info['email'], info['key'])
         for ip in info['whitelist']:
+            if '/' in ip:
+                target = 'ip_range'
+            else:
+                target = 'ip'
             # result = csa.CreateIpfirewall(info['zone_id'], ip, mode=mode, notes=f"cc")
-            result = csa.CreateIpfirewall(info['zone_id'], ip, mode=mode, notes=f"{customer}: 后台")
+            result = csa.CreateIpfirewall(info['zone_id'], ip, mode=mode, notes=f"{customer}: 后台", target=target)
             print (result)
-            # if 'errors' in result.keys() and len(result['errors']) != 0:
-            #     if  result['errors'][0]['message'] == 'firewallaccessrules.api.duplicate_of_existing':
-            #         # print (f"{info['zone_id']}, {ip}")
-            #         # print (csa.GetIpfirewall(info['zone_id'], ip)['result'][0])
-            #         get_ip_result = csa.GetIpfirewall(info['zone_id'], ip)
-            #         if 'result' in get_ip_result.keys() and len(get_ip_result['result']) != 0:
-            #             rule_id = get_ip_result['result'][0]['id']
-            #             print (csa.DeleteIpfirewall(info['zone_id'], rule_id))
-            # break
+#             # if 'errors' in result.keys() and len(result['errors']) != 0:
+#             #     if  result['errors'][0]['message'] == 'firewallaccessrules.api.duplicate_of_existing':
+#             #         # print (f"{info['zone_id']}, {ip}")
+#             #         # print (csa.GetIpfirewall(info['zone_id'], ip)['result'][0])
+#             #         get_ip_result = csa.GetIpfirewall(info['zone_id'], ip)
+#             #         if 'result' in get_ip_result.keys() and len(get_ip_result['result']) != 0:
+#             #             rule_id = get_ip_result['result'][0]['id']
+#             #             print (csa.DeleteIpfirewall(info['zone_id'], rule_id))
+#             # break
 # sys.exit()
 
 # # 获取api 接口
